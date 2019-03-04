@@ -59,6 +59,6 @@ RUN chmod go+w -R /home/rstudio && \
 USER $APP_UID:$APP_GID
 WORKDIR $HOME
 EXPOSE 8787 3838
-LABEL maintainer Uninett AS <system@uninett.no>
+#MAINTAINER
 ENTRYPOINT ["/sbin/tini", "-g", "--"]
 CMD ["/usr/local/bin/start.sh"]
