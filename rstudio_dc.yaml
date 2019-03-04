@@ -32,7 +32,7 @@ spec:
           persistentVolumeClaim:
             claimName: rstudio-test-pvc
       initContainers:
-      - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
+      - image: alpine-python3:latest
         command: ['sh', '-c', 'cat /etc/secret-volume/password | python3 -c "import crypt,sys; print(crypt.crypt(sys.stdin.readlines()[0], crypt.mksalt(crypt.METHOD_SHA512)))" > /tmp/output']
         name: shadowjob
         volumeMounts:
@@ -43,7 +43,7 @@ spec:
           mountPath: /tmp/
       containers:
         - name: rstudio-test
-          image: docker-registry.default.svc:5000/juha-rstudio/rstudio-test:latest
+          image: rstudio-test:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8787
