@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    description: RStudio
+    template.alpha.openshift.io/wait-for-ready: "true"
+  name: rstudio-test
+spec:
+  strategy:
+    type: Rolling
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - rstudio-test
+        from:
+          kind: ImageStreamTag
+          name: rstudio-test:latest
+    - type: ConfigChange
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rstudio
+    spec:
+      volumes:
+        - name: shadow-vol
+          secret: 
+            secretName: shadow
+        - name: rstudio-test-vol
+          persistentVolumeClaim:
+            claimName: rstudio-test-pvc
+      initContainers:
+      - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
+        command: ['sh', '-c', 'cat /etc/secret-volume/password | python3 -c "import crypt,sys; print(crypt.crypt(sys.stdin.readlines()[0], crypt.mksalt(crypt.METHOD_SHA512)))" > /tmp/output']
+        name: shadowjob
+        volumeMounts:
+        - name: shadow-vol
+          mountPath: /etc/secret-volume
+          readOnly: true
+        - name: rstudio-test-vol
+          mountPath: /tmp/
+      containers:
+        - name: rstudio-test
+          image: docker-registry.default.svc:5000/juha-rstudio/rstudio-test:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8787
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8787
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          resources:
+            limits:
+                memory: 2G
+          volumeMounts:
+          - name: rstudio-test-vol
+            mountPath: /tmp/
