@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Adding users"
-/tmp/fix.sh
+/usr/local/bin/fix.sh
 echo "Done"
 
 set -e
