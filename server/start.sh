@@ -1,6 +1,9 @@
 #!/bin/bash
-sh /tmp/fix-username.sh 
-sh /tmp/fix-shadow.sh
+
+echo "Adding users"
+/tmp/fix.sh
+echo "Done"
+
 set -e
 
 echo "Starting RSudio Server"
