@@ -56,10 +56,15 @@ RUN chmod go+w -R /home/rstudio && \
     chmod -R go+w /tmp/downloaded_packages /etc/rstudio/rsession.conf
 
 RUN chmod ug+rw /etc/passwd \
-    && echo 'echo "rstudio-server:x:$(id -u):$(id -g)::/home/rstudio-server:" >> /etc/passwd' && echo 'echo "rstudio:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd'
+    && echo 'echo "rstudio-server:x:$(id -u):$(id -g)::/home/rstudio-server:" >> /etc/passwd' >> /tmp/fix-username.sh
+RUN echo 'echo "rstudio:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd' >> /tmp/fix-username.sh
+
+RUN /tmp/fix-username.sh
 
 RUN chmod ug+rw /etc/shadow \
-    && echo 'echo "rstudio:$6$OLWwdiLp$uLstyoh.dp5yAWgZqoHUj707hxKlca17PrGFoDKvOlX.QHJVdLBm3eBfG9JF0NKjgxCL8QKTl3xMR/LZJSmgR1:17652:0:99999:7:::" >> /etc/shadow'
+    && echo 'echo "rstudio:$6$OLWwdiLp$uLstyoh.dp5yAWgZqoHUj707hxKlca17PrGFoDKvOlX.QHJVdLBm3eBfG9JF0NKjgxCL8QKTl3xMR/LZJSmgR1:17652:0:99999:7:::" >> /etc/shadow' > /tmp/fix-shadow.sh
+
+RUN /tmp/fix-shadow.sh
 
 USER $APP_UID:$APP_GID
 WORKDIR $HOME
