@@ -100,9 +100,9 @@ spec:
             limits:
                 cpu: 300m
                 memory: 2G
-          volumeMounts:
-          - name: rstudio-test-vol
-            mountPath: /tmp/
+#          volumeMounts:
+#          - name: rstudio-test-vol
+#            mountPath: /tmp/
  #         - name: shadow-cfm
  #           mountPath: /etc/shadow
  #           subPath: shadow
