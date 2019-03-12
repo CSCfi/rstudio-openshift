@@ -26,6 +26,6 @@ spec:
     - type: ImageChange
     - type: ConfigChange
     - github:
-          secretReference:
-            name: webhooksecret
-        type: GitHab
+        secretReference:
+          name: webhooksecret
+      type: GitHub
