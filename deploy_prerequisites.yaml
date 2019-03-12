@@ -109,7 +109,7 @@ objects:
   metadata:
     name: group-cm
   data:
-    shadow: |
+    group: |
       root:x:0:
       daemon:x:1:
       bin:x:2:
