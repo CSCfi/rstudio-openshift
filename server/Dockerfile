@@ -56,15 +56,13 @@ RUN chmod go+w -R /home/rstudio && \
     chmod -R go+w /tmp/downloaded_packages /etc/rstudio/rsession.conf
 
 RUN chmod ug+rw /etc/passwd \
-    && echo 'sed -e "s/^rstudio.*//g" /etc/passwd' >> /usr/local/bin/fix.sh \
-    && echo 'sed -e "s/^rstudio-server.*//g" /etc/passwd' >> /usr/local/bin/fix.sh \
+    && sed -e "s/^rstudio.*//g" /etc/passwd > /etc/passwd \
     && echo 'echo "rstudio-server:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd' >> /usr/local/bin/fix.sh
 RUN echo 'echo "rstudio:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd' >> /usr/local/bin/fix.sh
 
 
 RUN chmod ug+rw /etc/group \
-    && echo 'sed -e "s/^rstudio.*//g" /etc/group' >> /usr/local/bin/fix.sh \
-    && echo 'sed -e "s/^rstudio-server.*//g" /etc/group' >> /usr/local/bin/fix.sh \
+    && sed -e "s/^rstudio.*//g" /etc/group > /etc/group \
     && echo 'echo "rstudio:x:$(id -u):" >> /etc/group' >> /usr/local/bin/fix.sh
 
 RUN chgrp root /etc/shadow
