@@ -59,6 +59,10 @@ RUN chmod ug+rw /etc/passwd \
     && echo 'echo "rstudio-server:x:$(id -u):$(id -g)::/home/rstudio-server:" >> /etc/passwd' >> /usr/local/bin/fix.sh
 RUN echo 'echo "rstudio:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd' >> /usr/local/bin/fix.sh
 
+
+RUN chmod ug+rw /etc/group \
+    && echo 'echo "rstudio:x:$(id -u):" >> /etc/group' >> /usr/local/bin/fix.sh
+
 RUN chgrp root /etc/shadow
 
 RUN chmod ug+rw /etc/shadow \
