@@ -10,7 +10,7 @@ spec:
     type: Git
     git:
       uri: https://github.com/CSCfi/rstudio-openshift.git
-      ref: #source branch
+      ref: dev
     contextDir: server
   strategy:
     dockerStrategy:
