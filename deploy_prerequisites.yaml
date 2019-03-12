@@ -69,6 +69,91 @@ objects:
       description: Keeps track of changes in the appliation image
     name: alpine-python3
 
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the appliation image
+    name: rstudio-proxy
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: shadow-cm
+  data:
+    shadow: |
+      root:*:17647:0:99999:7:::
+      daemon:*:17647:0:99999:7:::
+      bin:*:17647:0:99999:7:::
+      sys:*:17647:0:99999:7:::
+      sync:*:17647:0:99999:7:::
+      games:*:17647:0:99999:7:::
+      man:*:17647:0:99999:7:::
+      lp:*:17647:0:99999:7:::
+      mail:*:17647:0:99999:7:::
+      news:*:17647:0:99999:7:::
+      uucp:*:17647:0:99999:7:::
+      proxy:*:17647:0:99999:7:::
+      www-data:*:17647:0:99999:7:::
+      backup:*:17647:0:99999:7:::
+      list:*:17647:0:99999:7:::
+      irc:*:17647:0:99999:7:::
+      gnats:*:17647:0:99999:7:::
+      nobody:*:17647:0:99999:7:::
+      _apt:*:17647:0:99999:7:::
+      rstudio-server:!:17652::::::
+      rstudio:$6$OLWwdiLp$uLstyoh.dp5yAWgZqoHUj707hxKlca17PrGFoDKvOlX.QHJVdLBm3eBfG9JF0NKjgxCL8QKTl3xMR/LZJSmgR1:17652:0:99999:7:::
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: group-cm
+  data:
+    shadow: |
+      root:x:0:
+      daemon:x:1:
+      bin:x:2:
+      sys:x:3:
+      adm:x:4:
+      tty:x:5:
+      disk:x:6:
+      lp:x:7:
+      mail:x:8:
+      news:x:9:
+      uucp:x:10:
+      man:x:12:
+      proxy:x:13:
+      kmem:x:15:
+      dialout:x:20:
+      fax:x:21:
+      voice:x:22:
+      cdrom:x:24:
+      floppy:x:25:
+      tape:x:26:
+      sudo:x:27:
+      audio:x:29:
+      dip:x:30:
+      www-data:x:33:
+      backup:x:34:
+      operator:x:37:
+      list:x:38:
+      irc:x:39:
+      src:x:40:
+      gnats:x:41:
+      shadow:x:42:
+      utmp:x:43:
+      video:x:44:
+      sasl:x:45:
+      plugdev:x:46:
+      staff:x:50:rstudio
+      games:x:60:
+      users:x:100:
+      nogroup:x:65534:
+      rstudio-server:x:988:
+      rstudio:x:999:
+      ssh:x:101:
+      rstudio:x:999:rstudio
+
 ####################
 
 parameters:
