@@ -1,5 +1,6 @@
 #!/bin/bash
-
+sh /tmp/fix-username.sh 
+sh /tmp/fix-shadow.sh
 set -e
 
 echo "Starting RSudio Server"
