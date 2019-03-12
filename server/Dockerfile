@@ -66,7 +66,7 @@ RUN chmod ug+rw /etc/group \
 RUN chgrp root /etc/shadow
 
 RUN chmod ug+rw /etc/shadow \
-    && echo 'echo "rstudio:$6$OLWwdiLp$uLstyoh.dp5yAWgZqoHUj707hxKlca17PrGFoDKvOlX.QHJVdLBm3eBfG9JF0NKjgxCL8QKTl3xMR/LZJSmgR1:17652:0:99999:7:::" >> /etc/shadow' >> /usr/local/bin/fix.sh
+    && echo 'echo "rstudio-server:$6$OLWwdiLp$uLstyoh.dp5yAWgZqoHUj707hxKlca17PrGFoDKvOlX.QHJVdLBm3eBfG9JF0NKjgxCL8QKTl3xMR/LZJSmgR1:17652:0:99999:7:::" >> /etc/shadow' >> /usr/local/bin/fix.sh
 
 RUN chgrp root /usr/local/bin/fix.sh \
     && chmod 774 /usr/local/bin/fix.sh
