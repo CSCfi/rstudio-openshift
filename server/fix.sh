@@ -1,0 +1,14 @@
+#!/bin/bash
+
+tempfile=$(mktemp)
+sed -e "s/^rstudio.*//g" /etc/passwd > $tempfile
+cp $tempfile /etc/passwd
+rm -f $tempfile
+echo "rstudio-server:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd
+echo "rstudio:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd
+
+tempfile2=$(mktemp)
+sed -e "s/^rstudio.*//g" /etc/group > $tempfile2
+cp $tempfile2 /etc/group
+rm -f $tempfile2
+echo "rstudio:x:$(id -u):" >> /etc/group
