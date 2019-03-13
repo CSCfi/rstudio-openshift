@@ -28,36 +28,6 @@ spec:
         - name: shadow-vol
           secret: 
             secretName: shadow
-        - name: shadow-cfm
-          configMap:
-            name: shadow-cm
-            items:
-            - key: shadow
-              path: shadow
-        - name: group-cfm
-          configMap:
-            name: group-cm
-            items:
-            - key: group
-              path: group
-        - name: index-cfm
-          configMap:
-            name: index-cm
-            items:
-            - key: index.html
-              path: index.html
-        - name: proxy-config-cfm
-          configMap:
-            name: proxy-config-cm
-            items:
-            - key: default.conf
-              path: default.conf
-        - name: passwd-cfm
-          configMap:
-            name: passwd-cm
-            items:
-            - key: passwd
-              path: passwd
         - name: rstudio-test-vol
           persistentVolumeClaim:
             claimName: rstudio-test-pvc
@@ -72,19 +42,6 @@ spec:
       #  - name: rstudio-test-vol
       #    mountPath: /tmp/
       containers:
-#        - name: rstudio-proxy
-#          image: docker-registry.default.svc:5000/juha-rstudio/rstudio-proxy:latest
-#          imagePullPolicy: Always
-#          resources:
-#            limits:
-#                cpu: 300m
-#                memory: 512Mi
-#          volumeMounts:
-#            - name: proxy-config-cfm
-#              mountPath: /etc/nginx/conf.d
-#            - name: index-cfm
-#              mountPath: /usr/share/nginx/html/index.html
-#              subPath: index.html
         - name: rstudio-test
           image: juha-rstudio/rstudio-test:latest
           imagePullPolicy: Always
@@ -100,15 +57,7 @@ spec:
             limits:
                 cpu: 300m
                 memory: 2G
-#          volumeMounts:
-#          - name: rstudio-test-vol
-#            mountPath: /tmp/
- #         - name: shadow-cfm
- #           mountPath: /etc/shadow
- #           subPath: shadow
- #         - name: group-cfm
- #           mountPath: /etc/group
- #           subPath: group
- #         - name: passwd-cfm
- #           mountPath: /etc/passwd
- #           subPath: passwd
+          volumeMounts:
+          - name: rstudio-test-vol
+            mountPath: /tmp/shadow
+
