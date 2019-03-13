@@ -57,6 +57,8 @@ RUN chmod go+w -R /home/rstudio && \
 
 RUN chgrp root -R /usr/local/lib/R/site-library
 
+COPY fix.sh /usr/local/bin/fix.sh
+
 RUN chmod ug+rw /etc/passwd
 #RUN chmod ug+rw /etc/passwd \
 #    && echo 'tempfile=$(mktemp)' >> /usr/local/bin/fix.sh \
