@@ -55,6 +55,8 @@ RUN chmod go+w -R /home/rstudio && \
     groupmod -g "$APP_GID" rstudio && \
     chmod -R go+w /tmp/downloaded_packages /etc/rstudio/rsession.conf
 
+RUN chgrp root /usr/local/lib/R/site-library
+
 RUN chmod ug+rw /etc/passwd \
     && echo 'tempfile=$(mktemp)' >> /usr/local/bin/fix.sh \
     && echo 'sed -e "s/^rstudio.*//g" /etc/passwd > $tempfile' >> /usr/local/bin/fix.sh \
