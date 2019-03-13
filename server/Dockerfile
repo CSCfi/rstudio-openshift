@@ -56,13 +56,19 @@ RUN chmod go+w -R /home/rstudio && \
     chmod -R go+w /tmp/downloaded_packages /etc/rstudio/rsession.conf
 
 RUN chmod ug+rw /etc/passwd \
-    && sed -e "s/^rstudio.*//g" /etc/passwd > /etc/passwd \
+    && echo 'tempfile=$(mktemp)' >> /usr/local/bin/fix.sh \
+    && echo 'sed -e "s/^rstudio.*//g" /etc/passwd > $tempfile' >> /usr/local/bin/fix.sh \
+    && echo 'cp $tempfile /etc/passwd' >> /usr/local/bin/fix.sh \
+    && echo 'rm -f $tempfile' >> /usr/local/bin/fix.sh \
     && echo 'echo "rstudio-server:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd' >> /usr/local/bin/fix.sh
 RUN echo 'echo "rstudio:x:$(id -u):$(id -g)::/home/rstudio:" >> /etc/passwd' >> /usr/local/bin/fix.sh
 
 
 RUN chmod ug+rw /etc/group \
-    && sed -e "s/^rstudio.*//g" /etc/group > /etc/group \
+    && echo 'tempfile2=$(mktemp)' >> /usr/local/bin/fix.sh \
+    && echo 'sed -e "s/^rstudio.*//g" /etc/group > $tempfile2' >> /usr/local/bin/fix.sh \
+    && echo 'cp $tempfile2 /etc/group' >> /usr/local/bin/fix.sh \
+    && echo 'rm -f $tempfile2' >> /usr/local/bin/fix.sh \
     && echo 'echo "rstudio:x:$(id -u):" >> /etc/group' >> /usr/local/bin/fix.sh
 
 RUN chgrp root /etc/shadow
