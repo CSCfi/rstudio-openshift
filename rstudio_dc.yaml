@@ -53,6 +53,9 @@ spec:
               port: 8787
             initialDelaySeconds: 30
             timeoutSeconds: 30
+          env:
+            - name: RStudioPassword
+              value: $6$M.5pFaLHJGuUHrA1$wEjOS2lzZ6SKe0iwuXUnH1hju1HZ9keXNSPEy1XNsCl.gsKJqx0SUVpPiS4StKS5LaJOLSOF1rg6.ojbZcSGn/ 
           resources:
             limits:
               cpu: '2'
