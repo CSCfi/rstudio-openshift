@@ -16,7 +16,8 @@ rm -f $tempfile2
 echo "rstudio:x:$(id -u):" >> /etc/group
 
 echo "Reading credentials"
-source /tmp/shadow/shadow.env
+RPassword='cat /tmp/shadow/shadow.crypt'
+
 echo "Creating shadow entries"
 tempfile3=$(mktemp)
 sed -e "s/^rstudio.*//g" /etc/shadow > $tempfile3
