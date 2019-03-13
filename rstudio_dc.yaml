@@ -1,4 +1,13 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  name: r-secret
+type: Opaque
+stringData:
+  secret.env: |-
+    PASSWORD=demo
+---
+apiVersion: v1
 kind: DeploymentConfig
 metadata:
   annotations:
@@ -19,6 +28,13 @@ spec:
           name: rstudio-test:latest
     - type: ConfigChange
   replicas: 1
+  spec:
+    volumes:
+      - name: r-secret-vol
+        secret:
+          secretName: r-secret
+      - name: r-shadow-vol
+        emptyDir: {}
   template:
     metadata:
       labels:
@@ -31,16 +47,15 @@ spec:
         - name: rstudio-test-vol
           persistentVolumeClaim:
             claimName: rstudio-test-pvc
-      #initContainers:
-      #- image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
-      #  command: ['sh', '-c', 'cat /etc/secret-volume/password | python3 -c "import crypt,sys; print(rstudio:,crypt.crypt(sys.stdin.readlines()[0], crypt.mksalt(crypt.METHOD_SHA512)),:17652:0:99999:7:::,sep='')" > /tmp/output']
-      #  name: shadowjob
-      #  volumeMounts:
-      #  - name: shadow-vol
-      #    mountPath: /etc/secret-volume
-      #    readOnly: true
-      #  - name: rstudio-test-vol
-      #    mountPath: /tmp/
+      initContainers:
+      - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
+        command: ["/bin/sh","-c","source /tmp/secret-env/secret.env && python3 -c 'import crypt,os; print(\"RPASSWORD=\",crypt.crypt(os.environ[\"PASSWORD\"], crypt.mksalt(crypt.METHOD_SHA512)),sep=\"\")' > /tmp/shadow/shadow.env"]
+        name: shadowjob
+        volumeMounts:
+          - name: r-secret-vol
+            mountPath: "/tmp/secret-env"
+          - name: r-shadow-vol
+            mountPath: "/tmp/shadow"
       containers:
         - name: rstudio-test
           image: juha-rstudio/rstudio-test:latest
@@ -53,9 +68,6 @@ spec:
               port: 8787
             initialDelaySeconds: 30
             timeoutSeconds: 30
-          env:
-            - name: RStudioPassword
-              value: $6$M.5pFaLHJGuUHrA1$wEjOS2lzZ6SKe0iwuXUnH1hju1HZ9keXNSPEy1XNsCl.gsKJqx0SUVpPiS4StKS5LaJOLSOF1rg6.ojbZcSGn/ 
           resources:
             limits:
               cpu: '2'
@@ -64,6 +76,6 @@ spec:
               cpu: 200m
               memory: 200Mi
           volumeMounts:
-          - name: rstudio-test-vol
-            mountPath: /tmp/shadow
+          - name: r-shadow-vol
+            mountPath: "/tmp/shadow"
 
