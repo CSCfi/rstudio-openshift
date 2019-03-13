@@ -55,8 +55,11 @@ spec:
             timeoutSeconds: 30
           resources:
             limits:
-                cpu: 300m
-                memory: 2G
+              cpu: '2'
+              memory: 8Gi
+            requests:
+              cpu: 200m
+              memory: 200Mi
           volumeMounts:
           - name: rstudio-test-vol
             mountPath: /tmp/shadow
