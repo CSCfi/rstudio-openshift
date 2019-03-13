@@ -5,7 +5,7 @@ metadata:
 type: Opaque
 stringData:
   secret.env: |-
-    PASSWORD=demo
+    export PASSWORD=demo
 ---
 apiVersion: v1
 kind: DeploymentConfig
@@ -28,28 +28,20 @@ spec:
           name: rstudio-test:latest
     - type: ConfigChange
   replicas: 1
-  spec:
-    volumes:
-      - name: r-secret-vol
-        secret:
-          secretName: r-secret
-      - name: r-shadow-vol
-        emptyDir: {}
   template:
     metadata:
       labels:
         app: rstudio
     spec:
       volumes:
-        - name: shadow-vol
-          secret: 
-            secretName: shadow
-        - name: rstudio-test-vol
-          persistentVolumeClaim:
-            claimName: rstudio-test-pvc
+        - name: r-secret-vol
+          secret:
+            secretName: r-secret
+        - name: r-shadow-vol
+          emptyDir: {}
       initContainers:
       - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
-        command: ["/bin/sh","-c","source /tmp/secret-env/secret.env && python3 -c 'import crypt,os; print(\"RPASSWORD=\",crypt.crypt(os.environ[\"PASSWORD\"], crypt.mksalt(crypt.METHOD_SHA512)),sep=\"\")' > /tmp/shadow/shadow.env"]
+        command: ["/bin/sh","-c","source /tmp/secret-env/secret.env && python3 -c 'import crypt,os; print(crypt.crypt(os.environ[\"PASSWORD\"], crypt.mksalt(crypt.METHOD_SHA512)))' > /tmp/shadow/shadow.crypt"]
         name: shadowjob
         volumeMounts:
           - name: r-secret-vol
@@ -70,12 +62,26 @@ spec:
             timeoutSeconds: 30
           resources:
             limits:
-              cpu: '2'
-              memory: 8Gi
+              cpu: '1'
+              memory: 4Gi
             requests:
-              cpu: 200m
-              memory: 200Mi
+              cpu: 500m
+              memory: 1Gi
           volumeMounts:
           - name: r-shadow-vol
             mountPath: "/tmp/shadow"
+#        - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
+#          name: shadowjob1
+#          volumeMounts:
+#            - name: r-secret-vol
+#              mountPath: "/tmp/secret-env"
+#            - name: r-shadow-vol
+#              mountPath: "/tmp/shadow"
+#          resources:
+#            limits:
+#              cpu: '1'
+#              memory: 2Gi
+#            requests:
+#              cpu: 100m
+#              memory: 200Mi
 
