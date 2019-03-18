@@ -1,13 +1,4 @@
 apiVersion: v1
-kind: Secret
-metadata:
-  name: r-secret
-type: Opaque
-stringData:
-  secret.env: |-
-    export PASSWORD=demo
----
-apiVersion: v1
 kind: DeploymentConfig
 metadata:
   annotations:
@@ -70,22 +61,8 @@ spec:
               memory: 1Gi
           env:
           - name: SHINY_APPS_PATH
-            value: /mnt/shiny-server/
+            value: /srv/shiny-server/
           volumeMounts:
           - name: r-shadow-vol
             mountPath: "/tmp/shadow"
-#        - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
-#          name: shadowjob1
-#          volumeMounts:
-#            - name: r-secret-vol
-#              mountPath: "/tmp/secret-env"
-#            - name: r-shadow-vol
-#              mountPath: "/tmp/shadow"
-#          resources:
-#            limits:
-#              cpu: '1'
-#              memory: 2Gi
-#            requests:
-#              cpu: 100m
-#              memory: 200Mi
 
