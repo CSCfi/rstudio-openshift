@@ -31,6 +31,16 @@ objects:
         storage: "2Gi"
 
 - apiVersion: v1
+  kind: Secret
+  metadata:
+    name: r-secret
+  type: Opaque
+  stringData:
+    secret.env: |-
+      export PASSWORD=demo
+  ---
+
+- apiVersion: v1
   kind: Service
   metadata:
     name: ${NAME}
@@ -39,6 +49,18 @@ objects:
     - port: 80
       targetPort: 8787
       name: ${NAME}-service
+    selector:
+      app: rstudio
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${NAME}-shiny
+  spec:
+    ports:
+    - port: 80
+      targetPort: 3838
+      name: ${NAME}-shiny-service
     selector:
       app: rstudio
 
@@ -54,6 +76,19 @@ objects:
     to:
       kind: Service
       name: ${NAME}
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${NAME}-shiny-route
+    annotations:
+      template.openshift.io/expose-uri: http://{.spec.host}
+  spec:
+    host: ${NAME}-shiny.${APPLICATION_DOMAIN_SUFFIX}
+    path: /
+    to:
+      kind: Service
+      name: ${NAME}-shiny
 
 - apiVersion: v1
   kind: ImageStream
