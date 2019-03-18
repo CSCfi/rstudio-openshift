@@ -68,6 +68,9 @@ spec:
             requests:
               cpu: 500m
               memory: 1Gi
+          env:
+          - name: SHINY_APPS_PATH
+            value: /mnt/shiny-server/
           volumeMounts:
           - name: r-shadow-vol
             mountPath: "/tmp/shadow"
