@@ -47,7 +47,7 @@ COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 COPY .Renviron $HOME/.Renviron
 
 #OpenShift additions
-#RUN useradd -m ${USERNAME}
+RUN useradd -m $USERNAME
 RUN chmod a+x /usr/local/bin/start.sh
 
 RUN chmod go+w -R /home/$USERNAME && \
