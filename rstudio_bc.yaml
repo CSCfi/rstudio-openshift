@@ -14,14 +14,19 @@ spec:
     contextDir: server
   strategy:
     dockerStrategy:
+      env:
+        - name: "USERNAME"
+          value: ${USERNAME}
+        - name: "PASSWORD"
+          value: ${PASSWORD}
       buildArgs:
         - name: tag
           value: rstudio
+
   output:
     to:
-      namespace: juha-rstudio
       kind: ImageStreamTag
-      name: rstudio-test:latest
+      name: rstudiotest:latest
   triggers:
     - type: ImageChange
     - type: ConfigChange

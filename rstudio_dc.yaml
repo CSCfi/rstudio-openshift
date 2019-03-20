@@ -4,7 +4,7 @@ metadata:
   annotations:
     description: RStudio
     template.alpha.openshift.io/wait-for-ready: "true"
-  name: rstudio-test
+  name: rstudio
 spec:
   strategy:
     type: Rolling
@@ -13,10 +13,18 @@ spec:
       imageChangeParams:
         automatic: true
         containerNames:
-          - rstudio-test
+          - rstudiotest
         from:
           kind: ImageStreamTag
-          name: rstudio-test:latest
+          name: rstudiotest:latest
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - shadowjob
+        from:
+          kind: ImageStreamTag
+          name: alpine-python3:latest
     - type: ConfigChange
   replicas: 1
   template:
@@ -30,8 +38,11 @@ spec:
             secretName: r-secret
         - name: r-shadow-vol
           emptyDir: {}
+        - name: rstudiotest-vol
+          persistentVolumeClaim:
+            claimName: rstudiotest-pvc
       initContainers:
-      - image: docker-registry.default.svc:5000/juha-rstudio/alpine-python3:latest
+      - image: alpine-python3:latest
         command: ["/bin/sh","-c","source /tmp/secret-env/secret.env && python3 -c 'import crypt,os; print(crypt.crypt(os.environ[\"PASSWORD\"], crypt.mksalt(crypt.METHOD_SHA512)))' > /tmp/shadow/shadow.crypt"]
         name: shadowjob
         volumeMounts:
@@ -40,8 +51,8 @@ spec:
           - name: r-shadow-vol
             mountPath: "/tmp/shadow"
       containers:
-        - name: rstudio-test
-          image: juha-rstudio/rstudio-test:latest
+        - name: rstudiotest
+          image: rstudiotest:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8787
@@ -50,8 +61,8 @@ spec:
             httpGet:
               path: /
               port: 8787
-            initialDelaySeconds: 30
-            timeoutSeconds: 30
+            initialDelaySeconds: 10
+            timeoutSeconds: 15
           resources:
             limits:
               cpu: '1'
@@ -61,8 +72,11 @@ spec:
               memory: 1Gi
           env:
           - name: SHINY_APPS_PATH
-            value: /srv/shiny-server/
+            value: "/mnt/rstudiotest-pvc/shiny-server/"
+          - name: PVC_MOUNT_PATH
+            value: "/mnt/rstudiotest-pvc/"
           volumeMounts:
           - name: r-shadow-vol
             mountPath: "/tmp/shadow"
-
+          - name: rstudiotest-vol
+            mountPath: /mnt/rstudiotest-pvc

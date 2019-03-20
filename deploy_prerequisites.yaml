@@ -37,8 +37,7 @@ objects:
   type: Opaque
   stringData:
     secret.env: |-
-      export PASSWORD=demo
-  ---
+      export PASSWORD=${PASSWORD}
 
 - apiVersion: v1
   kind: Service
@@ -111,13 +110,17 @@ parameters:
   displayName: Application Name
   name: NAME
   required: true
-  value: rstudio-test
+  value: rstudiotest
 
-- description: The OpenShift Namespace where the ImageStream resides
-  displayName: Namespace
-  name: NAMESPACE
+- description: Create a new username for logging into RStudio
+  displayName: Username
+  name: USERNAME
   required: true
-  value: juha-rstudio
+
+- description: Create a new password for logging into RStudio
+  displayName: Password
+  name: PASSWORD
+  required: true
 
 - description: Maximum amount of memory the container can use
   displayName: Memory Limit
