@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # Setup various variables
 ENV TZ="Europe/Helsinki" \
     USERNAME=${USERNAME} \
-    HOME="/home/${USERNAME}" \
+    HOME="/mnt/rstudiotest-pvc" \ #HOME="/home/${USERNAME}" \
     TINI_VERSION=v0.18.0 \
     APP_UID=999 \
     APP_GID=999 \
@@ -51,7 +51,7 @@ RUN if [ "$USERNAME" != "rstudio" ] ; then useradd -m $USERNAME ; fi
 
 RUN chmod a+x /usr/local/bin/start.sh
 
-RUN chmod go+w -R /home/$USERNAME && \
+RUN chmod go+w -R $HOME && \
     usermod -u 988 rstudio-server && \
     groupmod -g 988 rstudio-server && \
     usermod -u "$APP_UID" "$USERNAME" && \
