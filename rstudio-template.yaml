@@ -28,7 +28,7 @@ objects:
       - "ReadWriteMany"
     resources:
       requests:
-        storage: "2Gi"
+        storage: ${STORAGE_SIZE}
 
 - apiVersion: v1
   kind: Secret
@@ -271,6 +271,12 @@ parameters:
   name: MEMORY_LIMIT
   required: true
   value: 2G
+
+- description: Persistent Storage Size
+  displayName: Storage Size
+  name: STORAGE_SIZE
+  required: true
+  value: 1Gi
 
 - description: The exposed hostname suffix that will be used to create routes for app
   displayName: Application Hostname Suffix
