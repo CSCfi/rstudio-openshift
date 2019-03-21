@@ -116,9 +116,6 @@ objects:
       dockerfile: "FROM alpine:latest \n RUN apk --no-cache add python3"
     strategy:
       type: Docker
-#        buildArgs:
-#          - name: tag
-#            value: alpine-python3
     output:
       to:
         kind: ImageStreamTag
@@ -142,15 +139,14 @@ objects:
         ref: dev
       contextDir: server
     strategy:
-      type: Docker
+      dockerStrategy:
         env:
           - name: "USERNAME"
             value: ${USERNAME}
           - name: "PASSWORD"
             value: ${PASSWORD}
-#        buildArgs:
-#          - name: tag
-#            value: rstudio
+          - name: "NAME"
+            value: ${NAME}
 
     output:
       to:
