@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # Setup various variables
 ENV TZ="Europe/Helsinki" \
     USERNAME=${USERNAME} \
-    HOME="/mnt/rstudiotest-pvc" \ #HOME="/home/${USERNAME}" \
+    HOME="/mnt/${NAME}-pvc" \ #HOME="/home/${USERNAME}" \
     TINI_VERSION=v0.18.0 \
     APP_UID=999 \
     APP_GID=999 \
