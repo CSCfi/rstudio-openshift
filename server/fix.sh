@@ -6,8 +6,8 @@ sed -e "s/^rstudio.*//g" /etc/passwd > $tempfile
 sed -e "s/^$USERNAME.*//g" /etc/passwd > $tempfile
 cp $tempfile /etc/passwd
 rm -f $tempfile
-echo "rstudio-server:x:$(id -u):$(id -g)::/home/$USERNAME:" >> /etc/passwd
-echo "$USERNAME:x:$(id -u):$(id -g)::/home/$USERNAME:" >> /etc/passwd
+echo "rstudio-server:x:$(id -u):$(id -g)::/mnt/rstudiotest-pvc:" >> /etc/passwd
+echo "$USERNAME:x:$(id -u):$(id -g)::/mnt/rstudiotest-pvc:" >> /etc/passwd
 
 echo "Creating group entries"
 tempfile2=$(mktemp)
