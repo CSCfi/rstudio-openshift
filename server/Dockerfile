@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Setup various variables
 ENV TZ="Europe/Helsinki" \
-    #USERNAME=${USERNAME} \
+    USERNAME=${USERNAME} \
     HOME="/home/${USERNAME}" \
     TINI_VERSION=v0.18.0 \
     APP_UID=999 \
@@ -47,7 +47,8 @@ COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
 COPY .Renviron $HOME/.Renviron
 
 #OpenShift additions
-RUN useradd -m $USERNAME
+RUN if [ "$USERNAME" != "rstudio" ] ; then useradd -m $USERNAME ; fi
+
 RUN chmod a+x /usr/local/bin/start.sh
 
 RUN chmod go+w -R /home/$USERNAME && \
