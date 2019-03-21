@@ -7,10 +7,10 @@ echo "Done"
 set -e
 
 echo "Starting RSudio Server"
-echo "session-default-working-dir=/mnt/rstudiotest-pvc" >> /etc/rstudio/rsession.conf
+echo "session-default-working-dir=$HOME" >> /etc/rstudio/rsession.conf
 
 if [ ! -e "$HOME/.Renviron" ]; then
-	echo -e "HOME=/mnt/rstudiotest-pvc\nUSER=$USERNAME\nTZ=Europe/Helsinki" > "$HOME/.Renviron"
+	echo -e "HOME=$HOME\nUSER=$USERNAME\nTZ=Europe/Helsinki" > "$HOME/.Renviron"
 fi
 
 /usr/lib/rstudio-server/bin/rserver --server-daemonize 0 --auth-none 0 &
@@ -33,12 +33,6 @@ if [ -n "$SHINY_APPS_PATH" ]; then
 	rm -rf /srv/shiny-server
 	ln -s $SHINY_APPS_PATH /srv
 fi
-
-# If we have shared data mounted, the link it to current directory to have it visible in notebook
-#if [ -d "$PVC_MOUNT_PATH" ]; then
-#	rm -f "$HOME/data"
-#	ln -sf "$PVC_MOUNT_PATH" "$HOME/data"
-#fi
 
 echo "Starting Shiny Server"
 shiny-server > /var/log/shiny-server/server.log &

@@ -19,6 +19,8 @@ spec:
           value: ${USERNAME}
         - name: "PASSWORD"
           value: ${PASSWORD}
+        - name: "NAME"
+          value: ${NAME}
       buildArgs:
         - name: tag
           value: rstudio
