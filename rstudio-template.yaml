@@ -277,4 +277,5 @@ parameters:
 - description: The exposed hostname suffix that will be used to create routes for app
   displayName: Application Hostname Suffix
   name: APPLICATION_DOMAIN_SUFFIX
-  value: rahti-int-app.csc.fi
+  required: true
+  value: rahtiapp.fi
