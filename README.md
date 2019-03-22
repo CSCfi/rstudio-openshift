@@ -21,14 +21,14 @@ All variables are mandatory for application to be created. When using CSC Rahti 
 ## If running through the Command line:
 
 Download the oc client for openshift and rstudio-template.yaml from GitHub
-* *oc login <openshift-address> --token=<token>*
-* *oc new-project <project-name>*
+* *oc login "openshift-address" --token="token"*
+* *oc new-project "project-name"*
 Process and apply template using default values from template and passing you application specific parameters
-* *oc process -f rstudio-template.yaml -p NAME=<application-name> -p USERNAME=<your-username> -p PASSWORD=<your-password> | oc apply -f -*
+* *oc process -f rstudio-template.yaml -p NAME="application-name" -p USERNAME="your-username" -p PASSWORD="your-password" | oc apply -f -*
 
 ### Deleting application and project
 
 * *oc delete all -l app=rstudio*
 * *oc delete secret -l app=rstudio*
 * You might also want to delete the persistent volume created by the setup by *oc delete pvc -l app=rstudio*
-* *oc delete project <project-name>*
+* *oc delete project "project-name"*
