@@ -75,6 +75,9 @@ objects:
     to:
       kind: Service
       name: ${NAME}
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
 
 - apiVersion: v1
   kind: Route
@@ -88,6 +91,9 @@ objects:
     to:
       kind: Service
       name: ${NAME}-shiny
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
 
 - apiVersion: v1
   kind: ImageStream
