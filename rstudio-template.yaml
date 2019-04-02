@@ -8,7 +8,7 @@ message: |-
 metadata:
   annotations:
     description: 
-    iconClass: icon-other-unknown
+    iconClass: fa fa-bar-chart
     openshift.io/display-name: RStudio
     openshift.io/documentation-url: https://github.com/CSCfi/rstudio-openshift
     openshift.io/support-url: https://www.csc.fi/contact-info
