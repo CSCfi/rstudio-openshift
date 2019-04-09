@@ -4,17 +4,22 @@ labels:
   app: rstudio
   template: rstudio
 message: |-
+  The following components have been scheduled for creation in your project: RStudio, Shiny
+  Go to project overview -> once the creation of all the components are finished, use the following links -
+  To access RStudio IDE: ${NAME}.${APPLICATION_DOMAIN_SUFFIX}
+  To access Shiny index page: ${NAME}-.${APPLICATION_DOMAIN_SUFFIX}
+  For username use rstudio and self defined password.
   
 metadata:
   annotations:
-    description: 
+    description: Deploys RStudio IDE with Shiny application server. For username use rstudio and your own defined password.
     iconClass: fa fa-bar-chart
     openshift.io/display-name: RStudio
     openshift.io/documentation-url: https://github.com/CSCfi/rstudio-openshift
     openshift.io/support-url: https://www.csc.fi/contact-info
     openshift.io/long-description: 
     openshift.io/provider-display-name: CSC
-    tags: rstudio
+    tags: rstudio, shiny
     template.openshift.io/bindable: "false"
   name: rstudio
 
