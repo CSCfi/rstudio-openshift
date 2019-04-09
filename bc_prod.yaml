@@ -1,47 +1,61 @@
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: alpine-python3
-    annotations:
-      description: Defines how to build the application
-      template.alpha.openshift.io/wait-for-ready: "true"
-  spec:
-    source:
-      dockerfile: "FROM alpine:latest \n RUN apk --no-cache add python3"
-    strategy:
-      type: Docker
-    output:
-      to:
-        kind: ImageStreamTag
-        name: alpine-python3:latest
-    triggers:
-      - type: ImageChange
-      - type: ConfigChange
+apiVersion: v1
+kind: ImageStream
+metadata:
+  annotations:
+    description: Keeps track of changes in the appliation image
+  name: rstudio-os
 
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-    name: rstudio
-    annotations:
-      description: Defines how to build the application
-      template.alpha.openshift.io/wait-for-ready: "true"
-  spec:
-    source:
-      type: Git
-      git:
-        uri: https://github.com/CSCfi/rstudio-openshift.git
-        ref: prod
-      contextDir: server
-    strategy:
-      dockerStrategy:
-    output:
-      to:
-        kind: ImageStreamTag
-        name: rstudio-os:latest
-    triggers:
-      - type: ImageChange
-      - type: ConfigChange
-      - github:
-          secretReference:
-            name: webhooksecret
-        type: GitHub
+apiVersion: v1
+kind: ImageStream
+metadata:
+  annotations:
+    description: Keeps track of changes in the appliation image
+  name: alpine-python3
+
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: alpine-python3
+  annotations:
+    description: Defines how to build the application
+    template.alpha.openshift.io/wait-for-ready: "true"
+spec:
+  source:
+    dockerfile: "FROM alpine:latest \n RUN apk --no-cache add python3"
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: alpine-python3:latest
+  triggers:
+    - type: ImageChange
+    - type: ConfigChange
+
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  name: rstudio
+  annotations:
+    description: Defines how to build the application
+    template.alpha.openshift.io/wait-for-ready: "true"
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/CSCfi/rstudio-openshift.git
+      ref: prod
+    contextDir: server
+  strategy:
+    type: Docker
+  output:
+    to:
+      kind: ImageStreamTag
+      name: rstudio-os:latest
+  triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - github:
+        secretReference:
+          name: webhooksecret
+      type: GitHub
