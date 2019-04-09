@@ -9,10 +9,7 @@ spec:
   source:
     dockerfile: "FROM alpine:latest \n RUN apk --no-cache add python3"
   strategy:
-    dockerStrategy:
-      buildArgs:
-        - name: tag
-          value: alpine-python3
+    type: Docker
   output:
     to:
       kind: ImageStreamTag
