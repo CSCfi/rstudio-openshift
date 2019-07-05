@@ -48,6 +48,12 @@ COPY .Renviron $HOME/.Renviron
 #OpenShift additions
 RUN if [ "$USERNAME" != "rstudio" ] ; then useradd -m $USERNAME ; fi
 
+<<<<<<< HEAD
+=======
+RUN apt-get update
+RUN apt-get -y install default-jdk
+
+>>>>>>> c3b7bec62328308c436c329fdc94edee4eb1b0d6
 RUN chmod a+x /usr/local/bin/start.sh
 
 RUN chmod go+w -R $HOME && \
