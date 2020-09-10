@@ -1,0 +1,213 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  app: rstudio
+  template: rstudio
+message: |-
+  The following components have been scheduled for creation in your project: RStudio, Shiny
+  Go to project overview -> once the creation of all the components are finished, use the following links -
+  To access RStudio IDE: ${NAME}.${APPLICATION_DOMAIN_SUFFIX}
+  To access Shiny index page: ${NAME}-.${APPLICATION_DOMAIN_SUFFIX}
+  For username use rstudio and self defined password.
+  
+metadata:
+  annotations:
+    description: Deploys RStudio IDE with Shiny application server. For username use rstudio and your own defined password.
+    iconClass: fa fa-bar-chart
+    openshift.io/display-name: RStudio
+    openshift.io/documentation-url: https://github.com/CSCfi/rstudio-openshift
+    openshift.io/support-url: https://www.csc.fi/contact-info
+    openshift.io/long-description: 
+    openshift.io/provider-display-name: CSC
+    tags: rstudio, shiny
+    template.openshift.io/bindable: "false"
+  name: rstudio
+
+objects:
+- apiVersion: "v1"
+  kind: "PersistentVolumeClaim"
+  metadata:
+    name: ${NAME}-pvc
+  spec:
+    accessModes:
+      - "ReadWriteMany"
+    resources:
+      requests:
+        storage: ${STORAGE_SIZE}
+
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: r-secret
+  type: Opaque
+  stringData:
+    secret.env: |-
+      export PASSWORD=${PASSWORD}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${NAME}
+  spec:
+    ports:
+    - port: 80
+      targetPort: 8787
+      name: ${NAME}-service
+    selector:
+      app: rstudio
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${NAME}-shiny
+  spec:
+    ports:
+    - port: 80
+      targetPort: 3838
+      name: ${NAME}-shiny-service
+    selector:
+      app: rstudio
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${NAME}-route
+    annotations:
+      template.openshift.io/expose-uri: http://{.spec.host}
+  spec:
+    host: ${NAME}.${APPLICATION_DOMAIN_SUFFIX}
+    path: /
+    to:
+      kind: Service
+      name: ${NAME}
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${NAME}-shiny-route
+    annotations:
+      template.openshift.io/expose-uri: http://{.spec.host}
+  spec:
+    host: ${NAME}-shiny.${APPLICATION_DOMAIN_SUFFIX}
+    path: /
+    to:
+      kind: Service
+      name: ${NAME}-shiny
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
+
+####################
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: RStudio
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: rstudio
+  spec:
+    strategy:
+      type: Rolling
+    triggers:
+      - type: ConfigChange
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app: rstudio
+      spec:
+        volumes:
+          - name: r-secret-vol
+            secret:
+              secretName: r-secret
+          - name: r-shadow-vol
+            emptyDir: {}
+          - name: ${NAME}-vol
+            persistentVolumeClaim:
+              claimName: ${NAME}-pvc
+        initContainers:
+        - image: docker-registry.rahti.csc.fi/rstudio-images/alpine-python3:latest
+          command: ["/bin/sh","-c","source /tmp/secret-env/secret.env && python3 -c 'import crypt,os; print(crypt.crypt(os.environ[\"PASSWORD\"], crypt.mksalt(crypt.METHOD_SHA512)))' > /tmp/shadow/shadow.crypt"]
+          name: shadowjob
+          volumeMounts:
+            - name: r-secret-vol
+              mountPath: "/tmp/secret-env"
+            - name: r-shadow-vol
+              mountPath: "/tmp/shadow"
+        containers:
+          - name: ${NAME}
+            image: ${IMAGE}
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 8787
+              - containerPort: 3838
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 8787
+              initialDelaySeconds: 10
+              timeoutSeconds: 15
+            resources:
+              limits:
+                cpu: '1'
+                memory: 4Gi
+              requests:
+                cpu: 500m
+                memory: 1Gi
+            env:
+            - name: SHINY_APPS_PATH
+              value: "/mnt/rstudio-pvc/shiny-server/"
+            - name: PVC_MOUNT_PATH
+              value: "/mnt/rstudio-pvc/"
+            volumeMounts:
+            - name: r-shadow-vol
+              mountPath: "/tmp/shadow"
+            - name: ${NAME}-vol
+              mountPath: /mnt/rstudio-pvc
+
+
+####################
+
+parameters:
+- description: Unique identifier for your application. Recommended value - your username
+  displayName: Application Name
+  name: NAME
+  required: true
+
+#- description: Create a new username for logging into RStudio
+#  displayName: Username
+#  name: USERNAME
+#  required: true
+
+- description: Create a new password for logging into RStudio Username is rstudio
+  displayName: Password
+  name: PASSWORD
+  required: true
+
+- description: Maximum amount of memory the container can use
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 2G
+
+- description: Persistent Storage Size
+  displayName: Storage Size
+  name: STORAGE_SIZE
+  required: true
+  value: 1Gi
+
+- description: Docker Image for the RStudio
+  displayName: Worker Image
+  name: IMAGE
+  required: true
+  value: docker-registry.rahti.csc.fi/rstudio-images/rstudio-os:latest
+
+- description: The exposed hostname suffix that will be used to create routes for app
+  displayName: Application Hostname Suffix
+  name: APPLICATION_DOMAIN_SUFFIX
+  required: true
+  value: rahtiapp.fi
