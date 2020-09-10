@@ -1,18 +1,18 @@
 # Upstream Dockerfile https://github.com/rocker-org/rocker-versioned/blob/master/tidyverse/3.4.4/Dockerfile
-FROM rocker/tidyverse:3.4.4
+FROM rocker/tidyverse:4.0.2
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    nano=2.7.4-1 \
+    nano \
     libcurl4-openssl-dev \
     openssh-client \
-    less=481-2.1 \
-    htop=2.0.2-1 \
-    procps=2:3.3.12-3+deb9u1 \
-    net-tools=1.60+git20161116.90da8a0-1 \
-    rsync=3.1.2-1+deb9u1 \
-    gdebi-core=0.9.5.7+nmu1 \
-    libxt-dev=1:1.1.5-1 \
-    man-db=2.7.6.1-2 && \
+    less \
+    htop \
+    procps \
+    net-tools \
+    rsync \
+    gdebi-core \
+    libxt-dev \
+    man-db && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Setup various variables
