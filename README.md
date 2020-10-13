@@ -1,5 +1,6 @@
 # rstudio-openshift
 Run [RStudio](https://www.rstudio.com/) integrated development environment and [Shiny](https://www.rstudio.com/products/shiny/shiny-server/) application server on Red Hat OpenShift platform. This package is based on Kubernetes solution from https://github.com/Uninett/helm-charts
+Template for notebooks.csc.fi can be found from [template_imageready -branch](https://github.com/CSCfi/rstudio-openshift/tree/template_imageready)
 
 ## How to use this template:
 
