@@ -36,3 +36,7 @@ Process and apply template using default values from template and passing you ap
 You might also want to delete the persistent volume created by the setup by 
 * *oc delete pvc -l app=rstudio*
 * *oc delete project "project-name"*
+
+### Using with Allas object storage
+
+[How to use Allas from RStudio using AWS credentials and aws.s3 package](https://github.com/CSCfi/rstudio-openshift/blob/master/Allas.md)
