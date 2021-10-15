@@ -142,8 +142,8 @@ objects:
     source:
       type: Git
       git:
-        uri: https://github.com/tdeneke/rstudio-openshift.git
-        ref: dev
+        uri: https://github.com/CSCfi/rstudio-openshift.git
+        ref: ${SOURCE_REPOSITORY_REF}
       contextDir: server
     strategy:
       dockerStrategy:
@@ -286,3 +286,9 @@ parameters:
   name: APPLICATION_DOMAIN_SUFFIX
   required: true
   value: rahtiapp.fi
+  
+- description: The branch of the source repository (master, dev). 
+  displayName: Source Repository Branch
+  name: SOURCE_REPOSITORY_REF
+  value: master 
+  required: true
