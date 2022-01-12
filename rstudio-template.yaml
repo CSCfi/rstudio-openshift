@@ -143,7 +143,7 @@ objects:
       type: Git
       git:
         uri: https://github.com/CSCfi/rstudio-openshift.git
-        ref: dev
+        ref: master
       contextDir: server
     strategy:
       dockerStrategy:
