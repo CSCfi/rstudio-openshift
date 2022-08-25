@@ -6,6 +6,8 @@ RUN chmod +x start.sh
 RUN apt-get -y update
 RUN apt-get install -y libnss-wrapper  gettext vim
 
+RUN apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
 # rstudio needs write permissions to sqlite
 RUN chgrp -R 0 /var/lib/rstudio-server/ && \
     chmod -R g=u /var/lib/rstudio-server/ && \
