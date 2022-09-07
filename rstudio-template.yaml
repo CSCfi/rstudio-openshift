@@ -5,6 +5,10 @@ labels:
   template: rstudio
 message: |-
   RStudio Server has been scheduled for creation in your project, and should be soon available at: https://${NAME}.${APPLICATION_DOMAIN_SUFFIX}
+
+  * User: ${USER}
+  * Password: ${PASSWORD}
+
   Building images takes some minutes to complete, so please be patient. You can follow progress on your projects overview page.
 metadata:
   annotations:
@@ -13,61 +17,16 @@ metadata:
     openshift.io/display-name: RStudio
     openshift.io/documentation-url: https://github.com/CSCfi/rstudio-openshift
     openshift.io/support-url: https://www.csc.fi/contact-info
-    openshift.io/long-description: 
+    openshift.io/long-description:
     openshift.io/provider-display-name: CSC
     tags: rstudio
     template.openshift.io/bindable: "false"
   name: rstudio
-
 objects:
-- apiVersion: "v1"
-  kind: "PersistentVolumeClaim"
-  metadata:
-    name: ${NAME}-pvc
-  spec:
-    accessModes:
-      - "ReadWriteMany"
-    resources:
-      requests:
-        storage: ${STORAGE_SIZE}
-
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: r-secret
-  type: Opaque
-  stringData:
-    secret.env: |-
-      export PASSWORD=${PASSWORD}
-
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: ${NAME}
-  spec:
-    ports:
-    - port: 80
-      targetPort: 8787
-      name: ${NAME}-service
-    selector:
-      app: rstudio
-
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: ${NAME}-shiny
-  spec:
-    ports:
-    - port: 80
-      targetPort: 3838
-      name: ${NAME}-shiny-service
-    selector:
-      app: rstudio
-
 - apiVersion: v1
   kind: Route
   metadata:
-    name: ${NAME}-route
+    name: rstudio-route
     annotations:
       template.openshift.io/expose-uri: http://{.spec.host}
   spec:
@@ -75,15 +34,14 @@ objects:
     path: /
     to:
       kind: Service
-      name: ${NAME}
+      name: nginx-okd
     tls:
       insecureEdgeTerminationPolicy: Redirect
       termination: edge
-
 - apiVersion: v1
   kind: Route
   metadata:
-    name: ${NAME}-shiny-route
+    name: shiny-route
     annotations:
       template.openshift.io/expose-uri: http://{.spec.host}
   spec:
@@ -91,46 +49,315 @@ objects:
     path: /
     to:
       kind: Service
-      name: ${NAME}-shiny
+      name: shiny-server
     tls:
       insecureEdgeTerminationPolicy: Redirect
       termination: edge
+- apiVersion: v1
+  data:
+    default.conf: |
+      server {
+        listen 8081;
+        server_name ${NAME}.${APPLICATION_DOMAIN_SUFFIX};
+        location / {
+          root   /usr/share/nginx/html;
+          index  index.html index.htm;
+          auth_basic \"Rstudio\";
+          auth_basic_user_file /etc/nginx/secret/htpasswd;
+          proxy_pass http://rstudio:8787/;
+          proxy_set_header Host $http_host;
+          client_max_body_size 2000M;
+        }
 
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+          root   /usr/share/nginx/html;
+        }
+      }
+  kind: ConfigMap
+  metadata:
+    name: nginx-default
+- apiVersion: v1
+  stringData:
+    USER: ${USER}
+    PASSWORD: ${PASSWORD}
+  kind: Secret
+  metadata:
+    name: nginx-password
+  type: Opaque
+
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: nginx-okd
+    name: nginx-okd
+  spec:
+    replicas: 1
+    selector:
+      app: nginx-okd
+      deploymentconfig: nginx-okd
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftWebConsole
+        creationTimestamp: null
+        labels:
+          app: nginx-okd
+          deploymentconfig: nginx-okd
+      spec:
+        containers:
+        - image: nginx-okd:latest
+          name: nginx-okd
+          command:
+          - sh
+          - -xc
+          - >-
+            htpasswd -bc /etc/nginx/secret/htpasswd $USER $PASSWORD;
+            /docker-entrypoint.sh nginx -g "daemon off;"
+          env:
+          - name: USER
+            valueFrom:
+              secretKeyRef:
+                key: USER
+                name: nginx-password
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: PASSWORD
+                name: nginx-password
+          ports:
+          - containerPort: 8081
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/nginx/conf.d/
+            name: nginx-default
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: nginx-default
+          name: nginx-default
+        - name: nginx-password
+          secret:
+            defaultMode: 420
+            secretName: nginx-password
+    test: false
+    triggers:
+      - type: ImageChange
+        imageChangeParams:
+          automatic: true
+          containerNames:
+            - nginx-okd
+          from:
+            kind: ImageStreamTag
+            name: nginx-okd:latest
+      - type: ConfigChange
+  status: {}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: rstudio
+    name: rstudio
+  spec:
+    replicas: 1
+    selector:
+      app: rstudio
+      deploymentconfig: rstudio
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: rstudio
+          deploymentconfig: rstudio
+      spec:
+        containers:
+        - image: rstudio:latest
+          imagePullPolicy: Always
+          name: rstudio
+          ports:
+          - containerPort: 8787
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /srv/shiny-server
+              name: shiny-server
+            - mountPath: /home
+              name: rstudio-home
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+          - name: shiny-server
+            persistentVolumeClaim:
+              claimName: shiny-server
+          - name: rstudio-home
+            persistentVolumeClaim:
+              claimName: rstudio-home
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - rstudio
+        from:
+          kind: ImageStreamTag
+          name: rstudio:latest
+      type: ImageChange
+  status: {}
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: shiny-server
+    name: shiny-server
+  spec:
+    replicas: 1
+    selector:
+      app: shiny-server
+      deploymentconfig: shiny-server
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: shiny-server
+          deploymentconfig: shiny-server
+      spec:
+        containers:
+        - command:
+          - /start.sh
+          - shiny-server
+          image: rstudio:latest
+          imagePullPolicy: Always
+          name: shiny-server
+          ports:
+          - containerPort: 3838
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /srv/shiny-server
+            name: shiny-server
+          - mountPath: /home
+            name: rstudio-home
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: shiny-server
+          persistentVolumeClaim:
+            claimName: shiny-server
+        - name: rstudio-home
+          persistentVolumeClaim:
+            claimName: rstudio-home
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - shiny-server
+        from:
+          kind: ImageStreamTag
+          name: rstudio:latest
+      type: ImageChange
+  status: {}
 - apiVersion: v1
   kind: ImageStream
   metadata:
     annotations:
       description: Keeps track of changes in the appliation image
-    name: ${NAME}
-
+    name: rstudio
 - apiVersion: v1
   kind: ImageStream
   metadata:
     annotations:
       description: Keeps track of changes in the appliation image
-    name: alpine-python3
-
-####################
+    name: nginx-okd
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    name: alpine-python3
+    name: nginx-okd
     annotations:
       description: Defines how to build the application
       template.alpha.openshift.io/wait-for-ready: "true"
   spec:
     source:
-      dockerfile: "FROM alpine:latest \n RUN apk --no-cache add python3"
+      dockerfile: |
+        FROM nginx:alpine
+
+        # support running as arbitrary user which belogs to the root group
+        RUN chmod g+rwx /var/cache/nginx /var/run /var/log/nginx && \
+            chown nginx.root /var/cache/nginx /var/run /var/log/nginx && \
+            # users are not allowed to listen on priviliged ports
+            sed -i.bak 's/listen\(.*\)80;/listen 8081;/' /etc/nginx/conf.d/default.conf && \
+            # Make /etc/nginx/html/ available to use
+            mkdir -p /etc/nginx/html/ && chmod 777 /etc/nginx/html/ && \
+            # comment user directive as master process is run as user in OpenShift anyhow
+            sed -i.bak 's/^user/#user/' /etc/nginx/nginx.conf && \
+            # Increase the number of worker connections per process
+            sed -i 's/worker_connections\s*1024/worker_connections 10240/' /etc/nginx/nginx.conf && \
+            apk add apache2-utils && \
+            mkdir /etc/nginx/secret/ && \
+            chown nginx.root /etc/nginx/secret/ && \
+            chmod g+w /etc/nginx/secret/
+
+        WORKDIR /usr/share/nginx/html/
+        EXPOSE 8081
+
+        USER nginx:root
     strategy:
       type: Docker
     output:
       to:
         kind: ImageStreamTag
-        name: alpine-python3:latest
+        name: nginx-okd:latest
     triggers:
       - type: ImageChange
       - type: ConfigChange
-
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -154,11 +381,10 @@ objects:
             value: ${PASSWORD}
           - name: "NAME"
             value: ${NAME}
-
     output:
       to:
         kind: ImageStreamTag
-        name: ${NAME}:latest
+        name: rstudio:latest
     triggers:
       - type: ImageChange
       - type: ConfigChange
@@ -166,89 +392,84 @@ objects:
           secretReference:
             name: webhooksecret
         type: GitHub
-
 - apiVersion: v1
-  kind: DeploymentConfig
+  kind: Service
   metadata:
-    annotations:
-      description: RStudio
-      template.alpha.openshift.io/wait-for-ready: "true"
+    labels:
+      app: nginx-okd
+    name: nginx-okd
+  spec:
+    ports:
+    - name: 8081-tcp
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+    selector:
+      deploymentconfig: nginx-okd
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: rstudio
     name: rstudio
   spec:
-    strategy:
-      type: Rolling
-    triggers:
-      - type: ImageChange
-        imageChangeParams:
-          automatic: true
-          containerNames:
-            - ${NAME}
-          from:
-            kind: ImageStreamTag
-            name: ${NAME}:latest
-      - type: ImageChange
-        imageChangeParams:
-          automatic: true
-          containerNames:
-            - shadowjob
-          from:
-            kind: ImageStreamTag
-            name: alpine-python3:latest
-      - type: ConfigChange
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app: rstudio
-      spec:
-        volumes:
-          - name: r-secret-vol
-            secret:
-              secretName: r-secret
-          - name: r-shadow-vol
-            emptyDir: {}
-          - name: ${NAME}-vol
-            persistentVolumeClaim:
-              claimName: ${NAME}-pvc
-        initContainers:
-        - image: alpine-python3:latest
-          command: ["/bin/sh","-c","source /tmp/secret-env/secret.env && python3 -c 'import crypt,os; print(crypt.crypt(os.environ[\"PASSWORD\"], crypt.mksalt(crypt.METHOD_SHA512)))' > /tmp/shadow/shadow.crypt"]
-          name: shadowjob
-          volumeMounts:
-            - name: r-secret-vol
-              mountPath: "/tmp/secret-env"
-            - name: r-shadow-vol
-              mountPath: "/tmp/shadow"
-        containers:
-          - name: ${NAME}
-            image: ${NAME}:latest
-            imagePullPolicy: Always
-            ports:
-              - containerPort: 8787
-              - containerPort: 3838
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 8787
-              initialDelaySeconds: 10
-              timeoutSeconds: 15
-            resources:
-              limits:
-                cpu: '1'
-                memory: 4Gi
-              requests:
-                cpu: 500m
-                memory: 1Gi
-            env:
-            - name: SHINY_APPS_PATH
-              value: "/mnt/${NAME}-pvc/shiny-server/"
-            - name: PVC_MOUNT_PATH
-              value: "/mnt/${NAME}-pvc/"
-            volumeMounts:
-            - name: r-shadow-vol
-              mountPath: "/tmp/shadow"
-            - name: ${NAME}-vol
-              mountPath: /mnt/${NAME}-pvc
+    ports:
+    - name: 8787-tcp
+      port: 8787
+      protocol: TCP
+      targetPort: 8787
+    selector:
+      deploymentconfig: rstudio
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: shiny-server
+    name: shiny-server
+  spec:
+    ports:
+    - name: 3838-tcp
+      port: 3838
+      protocol: TCP
+      targetPort: 3838
+    selector:
+      deploymentconfig: shiny-server
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: shiny-server
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${STORAGE_SIZE}
+    storageClassName: glusterfs-storage
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: rstudio-home
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${STORAGE_SIZE_TMP}
+    storageClassName: glusterfs-storage
+  status: {}
 
 
 ####################
@@ -258,35 +479,32 @@ parameters:
   displayName: Application Name
   name: NAME
   required: true
-
-- description: Create a new username for logging into RStudio
+- description: Username for logigng into RStudio
   displayName: Username
-  name: USERNAME
+  name: USER
   required: true
-
-- description: Create a new password for logging into RStudio
-  displayName: Password
+  value: rstudio
+- description: Password for logging into Rstudio
+  displayName: Pasword
   name: PASSWORD
   required: true
-
-- description: Maximum amount of memory the container can use
-  displayName: Memory Limit
-  name: MEMORY_LIMIT
-  required: true
-  value: 2G
-
+  generate: expression
+  from: "[a-zA-Z0-9]{12}"
 - description: Persistent Storage Size
-  displayName: Storage Size
+  displayName: Storage Size for Shiny
   name: STORAGE_SIZE
   required: true
   value: 1Gi
-
+- description: Persistent Storage Size
+  displayName: Storage Size for Rstudio work folder
+  name: STORAGE_SIZE_TMP
+  required: true
+  value: 1Gi
 - description: The exposed hostname suffix that will be used to create routes for app
   displayName: Application Hostname Suffix
   name: APPLICATION_DOMAIN_SUFFIX
   required: true
   value: rahtiapp.fi
-
 - description: The branch of the source repository (master, dev). 
   displayName: Source Repository Branch
   name: SOURCE_REPOSITORY_REF
