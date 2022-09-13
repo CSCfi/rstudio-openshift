@@ -11,9 +11,6 @@ RUN apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
 # rstudio needs write permissions to sqlite
 RUN chgrp -R 0 /var/lib/rstudio-server/ && \
     chmod -R g=u /var/lib/rstudio-server/ && \
-    mkdir -p /var/log/shiny-server && \
-    chown .root -R /var/log/shiny-server && \
-    chmod g+w -R /var/log/shiny-server && \
     chown .root -R /home && \
     chmod g+w -R /home && \
     echo 'r-libs-user=~/R/library' >>/etc/rstudio/rsession.conf && \
@@ -31,7 +28,10 @@ RUN dpkg -i /tmp/shiny.deb && \
     chmod go+w -R /var/log/shiny-server /usr/local/lib/R /srv /var/lib/shiny-server &&\
     mkdir -p /var/log/rstudio-server &&\
     chown rstudio.rstudio /var/log/rstudio-server &&\
-    chmod go+w /var/log/rstudio-server
+    chmod go+w /var/log/rstudio-server && \
+    mkdir -p /var/log/shiny-server && \
+    chown .root -R /var/log/shiny-server && \
+    chmod g+w -R /var/log/shiny-server
 
 COPY shiny-server.conf /etc/shiny-server/
 ###
