@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file server/Dockerfile --tag cscfi/rstudio-openshift:$(date +%s)
+      run: docker build server --file server/Dockerfile --tag cscfi/rstudio-openshift:$(date +%s)
