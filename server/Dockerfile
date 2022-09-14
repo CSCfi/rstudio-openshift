@@ -5,7 +5,7 @@ RUN chmod +x start.sh
 
 # Setup various variables
 ENV TZ="Europe/Helsinki" \
-    HOME="/mnt/${NAME}-pvc"
+    HOME="/mnt/${NAME}-pvc" \
     TINI_VERSION=v0.18.0 \
     APP_UID=999 \
     APP_GID=999 \
