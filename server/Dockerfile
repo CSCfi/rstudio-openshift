@@ -14,7 +14,7 @@ ENV TZ="Europe/Helsinki" \
     PKG_SHINY_VERSION=1.5.7.907
 
 RUN apt-get -y update
-RUN apt-get install -y libnss-wrapper  gettext vim
+RUN apt-get install -y libnss-wrapper  gettext vim strace
 
 RUN apt-get install -y libudunits2-dev libgdal-dev libgeos-dev libproj-dev
 
