@@ -63,4 +63,13 @@ You might also want to delete the persistent volume created by the setup by
 
 ## Publish an application to Shiny
 
-Use the terminal in the Rstudio interface to copy your application to /srv/shiny-server/
+Use the terminal in the Rstudio interface to copy your application to `/srv/shiny-server/`, for example:
+
+```sh
+$ oc rsh dc/shiny-server
+# Once in a shell in the Pod run:
+$ cp -r /home/rstudio-server/* /srv/shiny-server/
+```
+
+
+
