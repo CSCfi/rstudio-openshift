@@ -63,4 +63,14 @@ You might also want to delete the persistent volume created by the setup by
 
 ## Publish an application to Shiny
 
-Use the terminal in the Rstudio interface to copy your application to /srv/shiny-server/
+Shiny is an application server for R. This template runs it by default, but if you develop an application and what to deploy it to Shiny, you will need to do a manual copy of the files. The procedure is:
+
+1. Login in the rstudio terminal. You need to find a **running** `rstudio-...` Pod. You can do this from the webinterface or from the command line. Follow [How to open a terminal to a Pod?](https://docs.csc.fi/support/faq/terminal-rahti-pod/).
+
+1. Once in the terminal, you will find the application you developed in Rstudio located in `/home/rstudio-server/`. Shiny, on the other hand, will serve any application located in the folder `/srv/shiny-server`. Shiny will look for a file called `app.R`. You can copy the application by:
+
+	```sh
+	cp -r /home/rstudio-server/* /srv/shiny-server/
+	```
+
+	For every change in your application that you want to be published, you need to make this copy again.
