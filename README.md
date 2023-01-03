@@ -63,7 +63,7 @@ You might also want to delete the persistent volume created by the setup by
 
 ## Publish an application to Shiny
 
-Shiny is an application server for R. This template runs it by default, but if you develop an application and what to deploy it to Shiny, you will need to do a manual copy of the files. The procedure is:
+Shiny is an application server for R. This template runs it by default, but if you develop an application and want to deploy it to Shiny, you will need to do a manual copy of the files. The procedure is:
 
 1. Login in the rstudio terminal. You need to find a **running** `rstudio-...` Pod. You can do this from the webinterface or from the command line. Follow [How to open a terminal to a Pod?](https://docs.csc.fi/support/faq/terminal-rahti-pod/).
 
