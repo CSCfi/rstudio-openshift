@@ -1,4 +1,4 @@
-FROM rocker/tidyverse:4.1.3
+FROM docker-registry.default.svc:5000/cscfi/tidyverse:4.1.3
 
 COPY ./start.sh .
 RUN chmod +x start.sh
